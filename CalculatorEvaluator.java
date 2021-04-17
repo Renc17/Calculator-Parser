@@ -3,6 +3,21 @@ import java.io.IOException;
 import java.lang.Math;
 
 
+////////////////////////////////////////////////////////////////////////////////
+//      GRAMMAR RULES                                                         //
+//      -------------------                                                   //
+//      S -> expr $                                                           //
+//      expr -> factor post_expr                                              //
+//      post_expr -> op_1 factor post_expr | ε                                //
+//      factor -> term post_factor                                            //
+//      term -> num | ( expr )                                                //
+//      post_factor -> ** term post_factor | ε                                //
+//      num -> digit post_num                                                 //
+//      post_num -> digit post_num | ε                                        //
+//      op_1 -> + | -                                                         //
+//      digit -> 0|1|...|9                                                    //
+////////////////////////////////////////////////////////////////////////////////
+
 class CalculatorEvaluator {
     private final InputStream in;
     private int lookahead;
@@ -57,10 +72,10 @@ class CalculatorEvaluator {
 
     private int factor() throws IOException, ParseError{
         int x = term();
-        return factor2(x);
+        return post_factor(x);
     }
 
-    private int factor2(int condition) throws IOException, ParseError{
+    private int post_factor(int condition) throws IOException, ParseError{
         int next_term;
         int next_factor;
         if (isStar(lookahead)) {
@@ -71,11 +86,11 @@ class CalculatorEvaluator {
                 throw new ParseError();
             }
             next_term = term();
-            next_factor = factor2(next_term);
+            next_factor = post_factor(next_term);
         }else {
             return condition;
         }
-        return factor2((int) Math.pow(condition, next_factor));
+        return post_factor((int) Math.pow(condition, next_factor));
     }
 
     private int number() throws IOException, ParseError{
